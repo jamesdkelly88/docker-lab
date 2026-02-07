@@ -1,0 +1,33 @@
+x-poll-config: &poll-config
+ POLL_CONFIG: |
+   - url: https://github.com/jamesdkelly88/docker-lab.git
+     reference: main
+     interval: 600
+
+services:
+  doco-cd:
+    container_name: doco-cd
+    image: ghcr.io/kimdre/doco-cd:0.61.1
+    restart: unless-stopped
+    ports:
+      - "9120:9120" # Prometheus metrics
+    environment:
+      TZ: Europe/London
+      <<: *poll-config
+      # TODO: secrets
+      # TODO: apprise notifications
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - data:/data
+    healthcheck:
+      test: [ "CMD", "/doco-cd", "healthcheck" ]
+      start_period: 15s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  data:
+
+networks:
+  default: 
+    name: doco-cd
