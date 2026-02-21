@@ -7,7 +7,7 @@ x-poll-config: &poll-config
 services:
   doco-cd:
     container_name: doco-cd
-    image: ghcr.io/kimdre/doco-cd:0.65.1
+    image: ghcr.io/kimdre/doco-cd:0.66.0
     restart: unless-stopped
     ports:
       - "9120:9120" # Prometheus metrics
