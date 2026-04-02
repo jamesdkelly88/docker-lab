@@ -1,0 +1,78 @@
+version: '3'
+
+env:
+  PUID:
+    sh: id -u
+  PGID:
+    sh: id -g
+  
+dotenv: ['.env']
+
+vars:
+  APP_FOLDERS:
+    sh: ls ./apps/
+  
+tasks:
+  hello:  
+    desc: Hello world task
+    cmds:
+      - echo 'Hello World from Task!'
+    silent: true
+
+  list:
+    desc: List all tasks
+    cmds:
+    - task --list
+    silent: true
+
+  up:
+    aliases:
+    - start
+    - update
+    desc: Start apps using doco-cd
+    cmd: docker compose up -d
+    dir: '{{ .ROOT_DIR }}/doco-cd'
+    silent: true
+
+  down:
+    aliases:
+    - stop
+    cmds:
+    - task: down_dir
+      vars: { PATH: 'doco-cd' }
+    - for: { var: APP_FOLDERS }
+      task: down_dir
+      vars: { PATH: 'apps/{{ .ITEM }}' }
+    desc: Stop apps (leave volumes intact)
+
+    silent: true
+
+  destroy:
+    cmds:
+    - task: destroy_dir
+      vars: { PATH: 'doco-cd' }
+    - for: { var: APP_FOLDERS }
+      task: destroy_dir
+      vars: { PATH: 'apps/{{ .ITEM }}' }
+    desc: Stop apps and delete volumes
+    silent: true
+
+  down_dir:
+    internal: true
+    cmds:
+    - pwd 
+    - docker compose down
+    dir: '{{ .PATH }}'
+    requires:
+      vars: [ PATH ]
+    silent: true
+
+  destroy_dir:
+    internal: true
+    cmds:
+    - pwd 
+    - docker compose down --volumes
+    dir: '{{ .PATH }}'
+    requires:
+      vars: [ PATH ]
+    silent: true
